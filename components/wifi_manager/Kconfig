@@ -1,0 +1,35 @@
+menu "WiFi Manager Configuration"
+
+    config WIFI_MAX_CONNECTIONS
+        string "Max Connections"
+        default 4
+        help
+            Max connections allowed for the Wi-Fi server.
+
+    config WIFI_SSID
+        string "WiFi SSID"
+        default "MyESP32AP"
+        help
+            SSID (network name) for the WiFi access point.
+
+    choice WIFI_AUTH_MODE
+        prompt "WiFi Authentication Mode"
+        default WIFI_AUTH_WPA2
+        help
+            Select the authentication mode for the WiFi AP.
+
+        config WIFI_AUTH_OPEN
+            bool "Open (No Password)"
+        config WIFI_AUTH_WPA2
+            bool "WPA2-PSK (Requires Password)"
+    endchoice
+
+    config WIFI_PASSWORD
+        string "WiFi Password"
+        default "changeme123"
+        depends on WIFI_AUTH_WPA2
+        help
+            Password for WiFi AP (8-63 characters for WPA2).
+            This option only appears if WPA2 authentication is selected.
+
+endmenu
