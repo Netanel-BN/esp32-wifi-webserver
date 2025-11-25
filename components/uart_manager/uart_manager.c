@@ -45,3 +45,45 @@ esp_err_t uart_manager_init(void)
 
     return ESP_OK;
 }
+
+int uart_manager_send(const char *data, size_t len)
+{
+    if (!initialized)
+    {
+        ESP_LOGE(TAG, "UART not initialized.");
+        return -1;
+    }
+
+    int written = uart_write_bytes(CONFIG_UART_PORT_NUM, data, len);
+    return written;
+}
+
+int uart_manager_receive(char *buffer, size_t max_len, uint32_t timeout_ms)
+{
+
+    if (!initialized)
+    {
+        ESP_LOGE(TAG, "UART not initialized.");
+        return -1;
+    }
+
+    int len = uart_read_bytes(CONFIG_UART_PORT_NUM, (uint8_t *)buffer, max_len,
+                              pdMS_TO_TICKS(timeout_ms));
+
+    return len;
+}
+
+int uart_manager_send_string(const char *str)
+{
+
+    return uart_manager_send(str, strlen(str));
+}
+
+void uart_manager_flush(void)
+{
+
+    if (initialized)
+    {
+        uart_wait_tx_done(CONFIG_UART_PORT_NUM, pdMS_TO_TICKS(1000));
+    }
+}
