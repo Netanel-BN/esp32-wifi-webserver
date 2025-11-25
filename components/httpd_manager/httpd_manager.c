@@ -37,7 +37,7 @@ static esp_err_t uart_handler(httpd_req_t *req)
     {
         const char *msg = "No UART response from device";
         ESP_LOGE(TAG, "%s", msg);
-        http_resp_send(req, msg, strlen(msg));
+        httpd_resp_send(req, msg, strlen(msg));
     }
 
     return ESP_OK;
