@@ -20,12 +20,17 @@ static esp_err_t hello_handler(httpd_req_t *req)
 
 static esp_err_t uart_handler(httpd_req_t *req)
 {
+    ESP_LOGI(TAG, "UART handler called - sending data...");
 
-    uart_manager_send_string("From ESP32");
+    int sent = uart_manager_send_string("From ESP32\r\n");
+    ESP_LOGI(TAG, "Sent %d bytes via UART", sent);
+
     uart_manager_flush();
+    ESP_LOGI(TAG, "UART TX flushed");
 
     char resp[64];
-    int len = uart_manager_receive(&resp, sizeof(resp) - 1, 1000);
+    int len = uart_manager_receive(resp, sizeof(resp) - 1, 1000);
+    ESP_LOGI(TAG, "Received %d bytes from UART", len);
 
     if (len > 0)
     {

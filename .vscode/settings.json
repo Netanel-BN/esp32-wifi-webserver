@@ -27,5 +27,5 @@
     "sdkconfig.h": "c",
     "uart_manager.h": "c"
   },
-  "idf.flashType": "UART"
+  "idf.flashType": "JTAG"
 }
