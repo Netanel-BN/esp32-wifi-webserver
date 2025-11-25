@@ -1,0 +1,41 @@
+menu "UART Manager Configuration"
+
+    config UART_PORT_NUM
+        int "UART Port Number"
+        default 1
+        range 0 2
+        help
+            UART port number to use (UART0, UART1, or UART2).
+            Note: UART0 is typically used for console/logging.
+
+    config UART_BAUD_RATE
+        int "UART Baud Rate"
+        default 115200
+        help
+            Baud rate for UART communication.
+
+    config UART_TX_PIN
+        int "UART TX Pin"
+        default 21
+        help
+            GPIO pin for UART TX.
+
+    config UART_RX_PIN
+        int "UART RX Pin"
+        default 20
+        help
+            GPIO pin for UART RX.
+
+    config UART_RX_BUFFER_SIZE
+        int "UART RX Buffer Size"
+        default 1024
+        help
+            Size of the UART RX buffer in bytes.
+
+    config UART_TX_BUFFER_SIZE
+        int "UART TX Buffer Size"
+        default 1024
+        help
+            Size of the UART TX buffer in bytes.
+
+endmenu
