@@ -4,6 +4,7 @@
 #include "esp_http_server.h"
 
 #include "httpd_manager.h"
+#include "uart_manager.h"
 
 #define M_HEADER_CT_TEXT "text/plain"
 
@@ -14,6 +15,31 @@ static esp_err_t hello_handler(httpd_req_t *req)
     const char *resp_str = "Welcome!";
     httpd_resp_set_type(req, M_HEADER_CT_TEXT);
     httpd_resp_send(req, resp_str, strlen(resp_str));
+    return ESP_OK;
+}
+
+static esp_err_t uart_handler(httpd_req_t *req)
+{
+
+    uart_manager_send_string("From ESP32");
+    uart_manager_flush();
+
+    char resp[64];
+    int len = uart_manager_receive(&resp, sizeof(resp) - 1, 1000);
+
+    if (len > 0)
+    {
+        resp[len] = '\0';
+        ESP_LOGI(TAG, "Received from UART: %s", resp);
+        httpd_resp_send(req, resp, len);
+    }
+    else
+    {
+        const char *msg = "No UART response from device";
+        ESP_LOGE(TAG, "%s", msg);
+        http_resp_send(req, msg, strlen(msg));
+    }
+
     return ESP_OK;
 }
 
@@ -31,6 +57,14 @@ void httpd_init(void)
         .handler = hello_handler,
         .user_ctx = NULL};
     httpd_register_uri_handler(server, &hello_uri);
+
+    httpd_uri_t uart_uri = {
+        .uri = "/uart",
+        .method = HTTP_GET,
+        .handler = uart_handler,
+        .user_ctx = NULL};
+
+    httpd_register_uri_handler(server, &uart_uri);
 
     ESP_LOGI(TAG, "Server started");
 }

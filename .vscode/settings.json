@@ -24,7 +24,8 @@
     "task.h": "c",
     "wifi_manager.h": "c",
     "string.h": "c",
-    "sdkconfig.h": "c"
+    "sdkconfig.h": "c",
+    "uart_manager.h": "c"
   },
   "idf.flashType": "UART"
 }
