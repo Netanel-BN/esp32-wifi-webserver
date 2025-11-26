@@ -8,6 +8,48 @@
 static const char *TAG = "uart_mgr";
 static bool initialized = false;
 
+static void uart_manager_flush(void)
+{
+
+    if (initialized)
+    {
+        uart_wait_tx_done(CONFIG_UART_PORT_NUM, pdMS_TO_TICKS(1000));
+    }
+}
+
+static int uart_manager_send(const char *data, size_t len)
+{
+    if (!initialized)
+    {
+        ESP_LOGE(TAG, "UART not initialized.");
+        return -1;
+    }
+
+    int written = uart_write_bytes(CONFIG_UART_PORT_NUM, data, len);
+    return written;
+}
+
+int uart_manager_receive(char *buffer, size_t max_len, uint32_t timeout_ms)
+{
+
+    if (!initialized)
+    {
+        ESP_LOGE(TAG, "UART not initialized.");
+        return -1;
+    }
+
+    int len = uart_read_bytes(CONFIG_UART_PORT_NUM, (uint8_t *)buffer, max_len,
+                              pdMS_TO_TICKS(timeout_ms));
+
+    return len;
+}
+
+static int uart_manager_send_string(const char *str)
+{
+
+    return uart_manager_send(str, strlen(str));
+}
+
 esp_err_t uart_manager_init(void)
 {
 
@@ -46,44 +88,30 @@ esp_err_t uart_manager_init(void)
     return ESP_OK;
 }
 
-int uart_manager_send(const char *data, size_t len)
+int uart_send_msg(const char *msg, char *buf, size_t buf_size,
+                  uint32_t timeout_ms)
 {
-    if (!initialized)
+
+    ESP_LOGI(TAG, "UART handler called - sending data...");
+
+    int sent = uart_manager_send_string("STATUS\r\n");
+    ESP_LOGI(TAG, "Sent %d bytes via UART", sent);
+
+    uart_manager_flush();
+    ESP_LOGI(TAG, "UART TX flushed");
+
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    int len = uart_manager_receive(buf, buf_size - 1, timeout_ms);
+    ESP_LOGI(TAG, "Received %d bytes from UART", len);
+
+    if (len > 0)
     {
-        ESP_LOGE(TAG, "UART not initialized.");
-        return -1;
+        buf[len] = '\0';
+        return len;
     }
-
-    int written = uart_write_bytes(CONFIG_UART_PORT_NUM, data, len);
-    return written;
-}
-
-int uart_manager_receive(char *buffer, size_t max_len, uint32_t timeout_ms)
-{
-
-    if (!initialized)
+    else
     {
-        ESP_LOGE(TAG, "UART not initialized.");
         return -1;
-    }
-
-    int len = uart_read_bytes(CONFIG_UART_PORT_NUM, (uint8_t *)buffer, max_len,
-                              pdMS_TO_TICKS(timeout_ms));
-
-    return len;
-}
-
-int uart_manager_send_string(const char *str)
-{
-
-    return uart_manager_send(str, strlen(str));
-}
-
-void uart_manager_flush(void)
-{
-
-    if (initialized)
-    {
-        uart_wait_tx_done(CONFIG_UART_PORT_NUM, pdMS_TO_TICKS(1000));
     }
 }

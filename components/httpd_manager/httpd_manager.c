@@ -18,23 +18,17 @@ static esp_err_t hello_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-static esp_err_t uart_handler(httpd_req_t *req)
+static esp_err_t status_handler(httpd_req_t *req)
 {
-    ESP_LOGI(TAG, "UART handler called - sending data...");
+    ESP_LOGI(TAG, "Handling status request");
 
-    int sent = uart_manager_send_string("From ESP32\r\n");
-    ESP_LOGI(TAG, "Sent %d bytes via UART", sent);
+    size_t buf_size = 64;
+    char resp[buf_size];
 
-    uart_manager_flush();
-    ESP_LOGI(TAG, "UART TX flushed");
-
-    char resp[64];
-    int len = uart_manager_receive(resp, sizeof(resp) - 1, 1000);
-    ESP_LOGI(TAG, "Received %d bytes from UART", len);
+    int len = uart_send_msg("STATUS", resp, buf_size, 1500);
 
     if (len > 0)
     {
-        resp[len] = '\0';
         ESP_LOGI(TAG, "Received from UART: %s", resp);
         httpd_resp_send(req, resp, len);
     }
@@ -63,13 +57,13 @@ void httpd_init(void)
         .user_ctx = NULL};
     httpd_register_uri_handler(server, &hello_uri);
 
-    httpd_uri_t uart_uri = {
-        .uri = "/uart",
+    httpd_uri_t status_uri = {
+        .uri = "/status",
         .method = HTTP_GET,
-        .handler = uart_handler,
+        .handler = status_handler,
         .user_ctx = NULL};
 
-    httpd_register_uri_handler(server, &uart_uri);
+    httpd_register_uri_handler(server, &status_uri);
 
     ESP_LOGI(TAG, "Server started");
 }
