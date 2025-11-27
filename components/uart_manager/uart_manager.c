@@ -38,15 +38,8 @@ int uart_manager_receive(char *buffer, size_t max_len, uint32_t timeout_ms)
         return -1;
     }
 
-    // Check how many bytes are already in the UART RX buffer
-    size_t available = 0;
-    uart_get_buffered_data_len(CONFIG_UART_PORT_NUM, &available);
-    ESP_LOGI(TAG, "Bytes in RX buffer before read: %d", available);
-
     int len = uart_read_bytes(CONFIG_UART_PORT_NUM, (uint8_t *)buffer, max_len,
                               pdMS_TO_TICKS(timeout_ms));
-
-    ESP_LOGI(TAG, "uart_read_bytes returned: %d bytes", len);
 
     return len;
 }
@@ -98,34 +91,29 @@ esp_err_t uart_manager_init(void)
 int uart_send_msg(const char *msg, char *buf, size_t buf_size,
                   uint32_t timeout_ms)
 {
-
-    ESP_LOGI(TAG, "UART handler called - sending data...");
-
     // Flush RX buffer before sending to avoid stale data
     uart_flush_input(CONFIG_UART_PORT_NUM);
-    ESP_LOGI(TAG, "RX buffer flushed");
 
     int sent = uart_manager_send_string("STATUS\r\n");
-    ESP_LOGI(TAG, "Sent %d bytes via UART", sent);
+    if (sent < 0) {
+        ESP_LOGE(TAG, "Failed to send UART message");
+        return -1;
+    }
 
     uart_manager_flush();
-    ESP_LOGI(TAG, "UART TX flushed");
 
     // Give device time to respond
     vTaskDelay(pdMS_TO_TICKS(100));
 
     int len = uart_manager_receive(buf, buf_size - 1, timeout_ms);
-    ESP_LOGI(TAG, "Received %d bytes from UART", len);
 
     if (len > 0)
     {
         buf[len] = '\0';
-        ESP_LOGI(TAG, "Response: %s", buf);
         return len;
     }
     else
     {
-        ESP_LOGW(TAG, "No response or timeout");
         return -1;
     }
 }
