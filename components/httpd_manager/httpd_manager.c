@@ -25,7 +25,7 @@ static esp_err_t status_handler(httpd_req_t *req)
     size_t buf_size = 64;
     char resp[buf_size];
 
-    int len = uart_send_msg("STATUS", resp, buf_size, 1500);
+    int len = uart_send_msg("STATUS", resp, buf_size, 2000);
 
     if (len > 0)
     {
