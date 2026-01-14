@@ -5,6 +5,7 @@
 
 #include "httpd_manager.h"
 #include "uart_manager.h"
+#include "i2c_manager.h"
 
 #define M_HEADER_CT_TEXT "text/plain"
 
@@ -18,7 +19,7 @@ static esp_err_t hello_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
-static esp_err_t status_handler(httpd_req_t *req)
+static esp_err_t uart_handler(httpd_req_t *req)
 {
     ESP_LOGI(TAG, "Handling status request");
 
@@ -42,6 +43,34 @@ static esp_err_t status_handler(httpd_req_t *req)
     return ESP_OK;
 }
 
+static esp_err_t i2c_handler(httpd_req_t *req)
+{
+    ESP_LOGI(TAG, "Handling I2C request - START");
+
+    size_t buf_size = 64;
+    char resp[buf_size];
+
+    ESP_LOGI(TAG, "About to call i2c_send_msg...");
+    // Use very short timeout to prevent blocking issues
+    int len = i2c_send_msg("I2C", resp, buf_size, 100);
+    ESP_LOGI(TAG, "i2c_send_msg returned: %d", len);
+
+    if (len > 0)
+    {
+        ESP_LOGI(TAG, "Received from I2C: %s", resp);
+        httpd_resp_send(req, resp, len);
+    }
+    else
+    {
+        const char *msg = "I2C device not found (no ACK at address)";
+        ESP_LOGW(TAG, "%s", msg);
+        httpd_resp_send(req, msg, strlen(msg));
+    }
+
+    ESP_LOGI(TAG, "Handling I2C request - END");
+    return ESP_OK;
+}
+
 void httpd_init(void)
 {
     // Configure server
@@ -57,13 +86,20 @@ void httpd_init(void)
         .user_ctx = NULL};
     httpd_register_uri_handler(server, &hello_uri);
 
-    httpd_uri_t status_uri = {
-        .uri = "/status",
+    httpd_uri_t uart_uri = {
+        .uri = "/uart",
         .method = HTTP_GET,
-        .handler = status_handler,
+        .handler = uart_handler,
         .user_ctx = NULL};
 
-    httpd_register_uri_handler(server, &status_uri);
+    httpd_register_uri_handler(server, &uart_uri);
 
+    httpd_uri_t i2c_uri = {
+        .uri = "/i2c",
+        .method = HTTP_GET,
+        .handler = i2c_handler,
+        .user_ctx = NULL};
+
+    httpd_register_uri_handler(server, &i2c_uri);
     ESP_LOGI(TAG, "Server started");
 }

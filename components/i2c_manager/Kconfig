@@ -1,0 +1,40 @@
+menu "i2c Manager Configuration"
+
+    config I2C_PORT_NUM
+        int "I2C Port Number"
+        default 0
+        range 0 1
+        help
+            I2C port number to use (I2C0 or I2C1).
+
+    config I2C_SDA_PIN
+        int "I2C SDA Pin"
+        default 6
+        help
+            GPIO pin for I2C SDA.
+
+    config I2C_SCL_PIN
+        int "I2C SCL Pin"
+        default 7
+        help
+            GPIO pin for I2C SCL.
+
+    config I2C_SLAVE_ADDRESS
+        hex "I2C Slave Device Address"
+        default 0x50
+        help
+            7-bit I2C address of the slave device to communicate with.
+
+    config I2C_GLITCH_IGNORE_CNT
+        int "I2C Glitch Ignore Control Duration"
+        default 7
+        help
+            Glitch Ignore Control period threshold (noise filtering)
+
+    config I2C_FREQUENCY_HZ
+        int "I2C Frequency (Hz)"
+        default 100000
+        help
+            Frequency for I2C communication in Hertz.
+
+endmenu
