@@ -67,10 +67,9 @@ int i2c_send_msg(const char *msg, char *resp_buf, size_t buf_size,
 
     esp_err_t err;
 
-    /*
     // First, probe if device is present (safer than transmit_receive)
     ESP_LOGI(TAG, "Probing I2C device at 0x%02X...", CONFIG_I2C_SLAVE_ADDRESS);
-    esp_err_t err = i2c_master_probe(i2c_bus, CONFIG_I2C_SLAVE_ADDRESS, pdMS_TO_TICKS(safe_timeout));
+    err = i2c_master_probe(i2c_bus, CONFIG_I2C_SLAVE_ADDRESS, pdMS_TO_TICKS(safe_timeout));
 
     ESP_LOGI(TAG, "i2c_master_probe result: %s", esp_err_to_name(err));
 
@@ -80,32 +79,34 @@ int i2c_send_msg(const char *msg, char *resp_buf, size_t buf_size,
         snprintf(resp_buf, buf_size, "I2C device not found at 0x%02X", CONFIG_I2C_SLAVE_ADDRESS);
         return -1;
     }
+    /*
+       // Device present, try transmit
+       ESP_LOGI(TAG, "Device found! Attempting transmit...");
+       */
+    /*
+     err = i2c_master_transmit(
+         i2c_device,
+         (const uint8_t *)msg, strlen(msg),
+         pdMS_TO_TICKS(safe_timeout));
 
-    // Device present, try transmit
-    ESP_LOGI(TAG, "Device found! Attempting transmit...");
-    */
-    err = i2c_master_transmit(
-        i2c_device,
-        (const uint8_t *)msg, strlen(msg),
-        pdMS_TO_TICKS(safe_timeout));
+     ESP_LOGI(TAG, "i2c_master_transmit completed with: %s", esp_err_to_name(err));
 
-    ESP_LOGI(TAG, "i2c_master_transmit completed with: %s", esp_err_to_name(err));
-
-    if (err != ESP_OK)
-    {
-        // ESP_ERR_INVALID_STATE (0x103) - Device not responding (NACK on address)
-        // ESP_ERR_TIMEOUT (0x107) - Timeout waiting for response
-        if (err == ESP_ERR_INVALID_STATE || err == ESP_ERR_TIMEOUT)
-        {
-            ESP_LOGW(TAG, "No I2C device at address 0x%02X: %s",
-                     CONFIG_I2C_SLAVE_ADDRESS, esp_err_to_name(err));
-        }
-        else
-        {
-            ESP_LOGE(TAG, "I2C transmit failed: %s (0x%x)", esp_err_to_name(err), err);
-        }
-        return -1;
-    }
+     if (err != ESP_OK)
+     {
+         // ESP_ERR_INVALID_STATE (0x103) - Device not responding (NACK on address)
+         // ESP_ERR_TIMEOUT (0x107) - Timeout waiting for response
+         if (err == ESP_ERR_INVALID_STATE || err == ESP_ERR_TIMEOUT)
+         {
+             ESP_LOGW(TAG, "No I2C device at address 0x%02X: %s",
+                      CONFIG_I2C_SLAVE_ADDRESS, esp_err_to_name(err));
+         }
+         else
+         {
+             ESP_LOGE(TAG, "I2C transmit failed: %s (0x%x)", esp_err_to_name(err), err);
+         }
+         return -1;
+     }
+         */
 
     // Now try to receive
     ESP_LOGI(TAG, "Calling i2c_master_receive...");
