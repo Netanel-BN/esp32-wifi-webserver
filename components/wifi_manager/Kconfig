@@ -1,8 +1,9 @@
 menu "WiFi Manager Configuration"
 
     config WIFI_MAX_CONNECTIONS
-        string "Max Connections"
+        int "Max Connections"
         default 4
+        range 1 8
         help
             Max connections allowed for the Wi-Fi server.
 
