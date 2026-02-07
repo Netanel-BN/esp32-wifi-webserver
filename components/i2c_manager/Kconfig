@@ -21,7 +21,7 @@ menu "i2c Manager Configuration"
 
     config I2C_SLAVE_ADDRESS
         hex "I2C Slave Device Address"
-        default 0x50
+        default 0x28
         help
             7-bit I2C address of the slave device to communicate with.
 
