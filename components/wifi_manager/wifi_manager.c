@@ -41,7 +41,7 @@ void wifi_ap_init()
 
     cfg.ap.ssid_len = 0;
     cfg.ap.channel = 1;
-    cfg.ap.max_connection = atoi((char *)(CONFIG_WIFI_MAX_CONNECTIONS));
+    cfg.ap.max_connection = CONFIG_WIFI_MAX_CONNECTIONS;
 
 // no auth
 #ifdef CONFIG_WIFI_AUTH_OPEN
