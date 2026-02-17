@@ -26,7 +26,7 @@ void i2c_manager_init(void)
         .scl_io_num = CONFIG_I2C_SCL_PIN,
         .clk_source = I2C_CLK_SRC_DEFAULT,
         .glitch_ignore_cnt = CONFIG_I2C_GLITCH_IGNORE_CNT,
-        .flags.enable_internal_pullup = true
+        .flags.enable_internal_pullup = false
 
     };
     ESP_ERROR_CHECK(i2c_new_master_bus(&cfg, &i2c_bus));
@@ -66,23 +66,23 @@ int i2c_send_msg(const char *msg, char *resp_buf, size_t buf_size,
     uint32_t safe_timeout = (timeout_ms > 100) ? 100 : timeout_ms;
 
     esp_err_t err;
-
-    // First, probe if device is present (safer than transmit_receive)
-    ESP_LOGI(TAG, "Probing I2C device at 0x%02X...", CONFIG_I2C_SLAVE_ADDRESS);
-    err = i2c_master_probe(i2c_bus, CONFIG_I2C_SLAVE_ADDRESS, pdMS_TO_TICKS(safe_timeout));
-
-    ESP_LOGI(TAG, "i2c_master_probe result: %s", esp_err_to_name(err));
-
-    if (err != ESP_OK)
-    {
-        ESP_LOGW(TAG, "Device not found or not responding: %s (0x%x)", esp_err_to_name(err), err);
-        snprintf(resp_buf, buf_size, "I2C device not found at 0x%02X", CONFIG_I2C_SLAVE_ADDRESS);
-        return -1;
-    }
     /*
-       // Device present, try transmit
-       ESP_LOGI(TAG, "Device found! Attempting transmit...");
-       */
+       // First, probe if device is present (safer than transmit_receive)
+       ESP_LOGI(TAG, "Probing I2C device at 0x%02X...", CONFIG_I2C_SLAVE_ADDRESS);
+       err = i2c_master_probe(i2c_bus, CONFIG_I2C_SLAVE_ADDRESS, pdMS_TO_TICKS(safe_timeout));
+
+       ESP_LOGI(TAG, "i2c_master_probe result: %s", esp_err_to_name(err));
+
+       if (err != ESP_OK)
+       {
+           ESP_LOGW(TAG, "Device not found or not responding: %s (0x%x)", esp_err_to_name(err), err);
+           snprintf(resp_buf, buf_size, "I2C device not found at 0x%02X", CONFIG_I2C_SLAVE_ADDRESS);
+           return -1;
+       }
+
+          // Device present, try transmit
+          ESP_LOGI(TAG, "Device found! Attempting transmit...");
+          */
     /*
      err = i2c_master_transmit(
          i2c_device,
@@ -113,13 +113,13 @@ int i2c_send_msg(const char *msg, char *resp_buf, size_t buf_size,
     err = i2c_master_receive(
         i2c_device,
         (uint8_t *)resp_buf, buf_size - 1,
-        pdMS_TO_TICKS(safe_timeout));
+        safe_timeout);
 
     ESP_LOGI(TAG, "i2c_master_receive completed with: %s", esp_err_to_name(err));
 
     if (err != ESP_OK)
     {
-        ESP_LOGE(TAG, "I2C transmit_receive failed: %s (0x%x)", esp_err_to_name(err), err);
+        ESP_LOGE(TAG, "I2C receive failed: %s (0x%x)", esp_err_to_name(err), err);
 
         // Common I2C errors:
         // ESP_ERR_TIMEOUT (0x107) - No device response

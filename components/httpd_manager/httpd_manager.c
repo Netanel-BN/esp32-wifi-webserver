@@ -62,7 +62,7 @@ static esp_err_t i2c_handler(httpd_req_t *req)
     }
     else
     {
-        const char *msg = "I2C device not found (no ACK at address)";
+        const char *msg = "Failed to read from I2C device";
         ESP_LOGW(TAG, "%s", msg);
         httpd_resp_send(req, msg, strlen(msg));
     }
